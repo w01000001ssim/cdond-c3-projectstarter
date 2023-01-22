@@ -161,12 +161,17 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            pip install ansible
+            sudo apt-get update
+            sudo apt-get install -y tar gzip
+            sudo apt-get install -y ansible
+            sudo apt-get install -y awscli
+            
+
       - run:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt playbook.yml
+            ansible-playbook -i inventory.txt configure-server.yml
       
 
 
