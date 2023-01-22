@@ -147,6 +147,28 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
 
+  configure-infrastructure:
+    docker:
+     
+      - image: circleci/python:3.7.4
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            pip install ansible
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt playbook.yml
+      
+
 
 
 workflows:
