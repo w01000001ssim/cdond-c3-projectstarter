@@ -149,8 +149,8 @@ jobs:
 
   configure-infrastructure:
     docker:
-     
-      - image: circleci/aws-cli
+     #aws-cli image
+      - image: amazon/aws-cli
     steps:
       - checkout
       - add_ssh_keys:
