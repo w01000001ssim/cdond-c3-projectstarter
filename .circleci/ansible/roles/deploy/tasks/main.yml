@@ -28,10 +28,11 @@
 
 - name: install pm2
   become: true
+  shell: |
+    cd /home/ubuntu
   npm:
     name: pm2
     state: latest
-    global: yes
 
 - name: Start app
   become: true
