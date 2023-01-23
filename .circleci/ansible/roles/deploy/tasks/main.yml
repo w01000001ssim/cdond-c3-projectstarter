@@ -26,15 +26,6 @@
     src: ~/project/artifact.tar.gz
     dest: /home/ubuntu/artifact.tar.gz
 
-- name: install pm2
-  become: true
-  shell: |
-    cd /home/ubuntu
-  npm:
-    name: pm2
-    state: latest
-
-
 - name: Start app
   become: true
   shell: |
