@@ -149,26 +149,22 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli
+     
+      - image: circleci/python:3.7.4
     steps:
       - checkout
-      - run:
-          name: Install tar utility
-          command: |
-            yum install -y tar gzip
       - add_ssh_keys:
           fingerprints:
             - "af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"
       - attach_workspace:
           at: ~/
-
       - run:
           name: Install dependencies
           command: |
             sudo apt-get update
             sudo apt-get install -y tar gzip
             sudo apt-get install -y ansible
-            sudo apt-get install -y awscli
+
             
 
       - run:
