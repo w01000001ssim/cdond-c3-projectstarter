@@ -11,12 +11,6 @@
     state: latest
     upgrade: yes
 
-- name: copy backend tar.gz
-  become: true
-  unarchive:
-    src: ~/project/backend.tar.gz
-    dest: /home/ubuntu
-
 - name: install dependencies
   become: true
   apt:
