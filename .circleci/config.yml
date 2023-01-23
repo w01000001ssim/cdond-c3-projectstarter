@@ -160,6 +160,7 @@ jobs:
           fingerprints:
             - "af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"
       - attach_workspace:
+          at: ~/
 
       - run:
           name: Install dependencies
