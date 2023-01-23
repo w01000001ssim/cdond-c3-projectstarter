@@ -22,10 +22,10 @@
   become: true
   become_method: sudo
 
-- name: stop the app
-  shell: pm2 stop default
-  become: true
-  become_method: sudo
+#- name: stop the app
+#  shell: pm2 stop default
+#  become: true
+#  become_method: sudo
 
 - name: start the app
   shell: pm2 start npm -- start
