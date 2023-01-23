@@ -3,7 +3,7 @@ version: 2.1
 commands:
 
 
-  install_ansible:
+  install-ansible:
     description: Install Ansible
     steps:
       - run:
@@ -13,7 +13,7 @@ commands:
             sudo apt install software-properties-common -y
             sudo add-apt-repository --yes --update ppa:ansible/ansible
             sudo apt install ansible -y
-  install_awscli:
+  install-awscli:
     description: Install awscli
     steps:
       - run:
@@ -193,7 +193,7 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
           #no_output_timeout: 30m
-      - destroy_environment  
+      - destroy-environment  
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
