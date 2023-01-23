@@ -1,22 +1,42 @@
 ---
-
-
-- name: install dependencies
+- name: "update local apt repo."
   become: true
   apt:
-    name: 
-     - npm
-     - nodejs
+    update_cache: yes
+
+- name: "upgrade apt packages"
+  become: true
+  apt:
+    upgrade: yes
+
+- name: "remove stale dependencies"
+  become: true
+  apt:
+    autoremove: yes
+
+- name: "install dependencies [nodejs and npm]."
+  become: true
+  apt:
+    name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
-  
-- name: artifact to instance 
+
+- name: "install pm2"
+  become: true
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
+- name: "Copy artifact into Instance" 
   become: true
   copy:
     src: ~/project/artifact.tar.gz
     dest: /home/ubuntu/artifact.tar.gz
 
-- name: Start app
+
+- name: "Start app"
   become: true
   shell: |
     cd /home/ubuntu
