@@ -385,7 +385,7 @@ jobs:
             echo backend-${CIRCLE_WORKFLOW_ID:0:7}
             echo ${API_URL}
 
-           sleep 100
+            sleep 100
 
             if curl -s $API_URL/api/status | grep "ok"
             then
