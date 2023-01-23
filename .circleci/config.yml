@@ -149,19 +149,18 @@ jobs:
 
   configure-infrastructure:
     docker:
-     #aws-cli image
       - image: amazon/aws-cli
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install tar utility
           command: |
             yum install -y tar gzip
+      - add_ssh_keys:
+          fingerprints:
+            - "af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"
+      - attach_workspace:
+
       - run:
           name: Install dependencies
           command: |
