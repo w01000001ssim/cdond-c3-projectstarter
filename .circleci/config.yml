@@ -192,8 +192,13 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-          #no_output_timeout: 30m
-      - destroy-environment  
+         
+      - destroy-environment:
+          workflow_id: << pipeline.parameters.workflow_id >> 
+
+
+       
+      
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
