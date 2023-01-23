@@ -173,8 +173,60 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
       
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to memstash
+          command: |
+            then
+                # If you are using kvdb.io, generate the bucket ID "LgK2W4748kBozsHfmPPdWv" in your local terminal first
+              curl https://kvdb.io/LgK2W4748kBozsHfmPPdWv/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
 
-
+  deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies #Python, Ansible, Node, NPM, and AWS CLI
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y tar gzip
+            sudo apt-get install -y ansible
+            sudo apt-get install -y awscli
+            sudo apt-get install -y python3-pip
+            sudo pip3 install boto3
+            sudo apt-get install -y nodejs
+            sudo apt-get install -y npm
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws cloudformation describe-stacks --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL=${API_URL}"
+            export API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+            
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+      
+      
 
 workflows:
   default:
