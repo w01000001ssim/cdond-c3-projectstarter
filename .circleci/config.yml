@@ -24,6 +24,26 @@ commands:
             unzip awscliv2.zip
             sudo ./aws/install
 
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      workflow_id:
+        default: "${CIRCLE_WORKFLOW_ID:0:7}"
+        type: string
+    steps:
+      - run:
+          name: Revert Migrations
+          when: on_fail
+          command: |
+            SUCCESS=$(curl --insecure "https://kvdb.io/B15e9WYzosEcMgA3oHxrTW/migration_<<parameters.workflow_id>>")
+            if(($SUCCESS==1));
+            then
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+            fi
+
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     steps:
@@ -69,7 +89,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - destroy-environment
+
 
   test-frontend:
     docker:
@@ -98,7 +118,7 @@ jobs:
             cd backend
             npm install
             npm run test
-      - destroy-environment
+      
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -130,7 +150,6 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --force
             npm audit --audit-level=critical
-      - destroy-environment
 
   deploy-infrastructure:
     docker:
@@ -172,7 +191,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment
-
+      - revert-migrations  
   configure-infrastructure:
     docker:
      
@@ -197,10 +216,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
          
       - destroy-environment
-
-
-       
-      
+      - revert-migrations  
   run-migrations:
     docker:
       # - image: circleci/node:13.8.0
@@ -242,25 +258,38 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies #Python, Ansible, Node, NPM, and AWS CLI
+          name: Install dependencies
           command: |
-            sudo apt-get update
-            sudo apt-get install -y tar gzip
-            sudo apt-get install -y ansible
-            sudo apt-get install -y awscli
-            sudo apt-get install -y python3-pip
-            sudo pip3 install boto3
-            sudo apt-get install -y nodejs
-            sudo apt-get install -y npm
+            # your code here
+            yum install -y tar gzip
+            yum install -y awscli
+            yum install -y wget
+            wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            ls
+            yum install -y epel-release-latest-7.noarch.rpm
+            yum update -y
+  
+            yum install -y ansible
+            yum install -y python3
+            curl --silent --location https://rpm.nodesource.com/setup_14.x | bash -
+            yum install -y nodejs
+      - add_ssh_keys:
+          fingerprints: ["af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"] 
+      - attach_workspace:
+          at: ~/
+
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(aws cloudformation describe-stacks --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filter "Name=tag:project,Values=udapeople_project" \
+            --output text
+            )
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "API_URL=${API_URL}"
-            export API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            echo "API_URL-${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
-            
       - run:
           name: Deploy frontend objects
           command: |
@@ -268,8 +297,67 @@ jobs:
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - destroy-environment
+      - revert-migrations  
+  deploy-backend:
+    docker:
+      - image: cimg/node:13.8.0
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"] 
+      - attach_workspace:
+          at: ~/
+
+      - run:
+          name: upgrade packages and Install AWS CLI
+          command: |
+            sudo apt update
+            sudo apt upgrade -y
+            sudo apt install awscli -y
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+            sudo apt install -y curl tar gzip
+            sudo apt install -y python3
+            sudo apt install -y python3-pip
+            python3 --version
+            python3 -m pip install --upgrade pip
+            # pip3 install ansible
+            python3 -m pip install ansible --user
       
+      - run:
+          name: Deploy backend
+          command: |
+            cat > backend/.env \<<- EOF
+            TYPEORM_CONNECTION=$TYPEORM_CONNECTION
+            TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR
+            TYPEORM_ENTITIES=$TYPEORM_ENTITIES
+            TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS
+            TYPEORM_HOST=$TYPEORM_HOST
+            TYPEORM_PORT=$TYPEORM_PORT
+            TYPEORM_USERNAME=$TYPEORM_USERNAME
+            TYPEORM_PASSWORD=$TYPEORM_PASSWORD
+            TYPEORM_DATABASE=$TYPEORM_DATABASE
+            EOF
+            cat backend/.env
+            
+            cd backend
+            npm install
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            ls -a && pwd
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+          no_output_timeout: 30m
+      - destroy-environment
+      - revert-migrations  
       
 
 workflows:
@@ -302,5 +390,8 @@ workflows:
           requires: 
             - configure-infrastructure
       - deploy-frontend:
+          requires: 
+            - run-migrations
+      - deploy-backend:
           requires: 
             - run-migrations
