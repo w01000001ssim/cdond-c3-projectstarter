@@ -37,10 +37,4 @@
     - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
     - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
 
-#In one of the roles Install Python. Update/upgrade packages. Install nodejs, npm, and pm2.
-  roles:
-    - role: install-python
-    - role: update-packages
-    - role: install-nodejs
-    - role: install-pm2
 
