@@ -69,7 +69,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-
+      - destroy-environment
+      
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -97,7 +98,7 @@ jobs:
             cd backend
             npm install
             npm run test
-
+      - destroy-environment
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -129,6 +130,7 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --force
             npm audit --audit-level=critical
+      - destroy-environment
 
   deploy-infrastructure:
     docker:
@@ -169,7 +171,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy_environment
+      - destroy-environment
 
   configure-infrastructure:
     docker:
