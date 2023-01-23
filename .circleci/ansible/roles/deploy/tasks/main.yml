@@ -1,15 +1,5 @@
 ---
 
-- name: apt update
-  become: true
-  apt:
-    state: latest
-    update_cache: yes
-- name: apt upgrade
-  become: true
-  apt:
-    state: latest
-    upgrade: yes
 
 - name: install dependencies
   become: true
