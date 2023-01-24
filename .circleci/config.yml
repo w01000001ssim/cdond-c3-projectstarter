@@ -445,7 +445,7 @@ jobs:
 
             for bucket in "${BUCKETS[@]}"
             do
-              if [[ "${bucket}" != "udapeople${CIRCLE_WORKFLOW_ID:0:7}" ]]
+              if [[ "${bucket}" != "udapeople-${CIRCLE_WORKFLOW_ID:0:7}" ]]
               then
                 echo "Deleting bucket: ${bucket}"
                 aws s3 rb "s3://${bucket}" --force || true
