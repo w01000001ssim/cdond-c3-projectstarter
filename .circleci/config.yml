@@ -441,8 +441,8 @@ jobs:
           command: |
 
             # Fetch the Old workflow ID from OldWorkflowID.txt
-            cat ~/project/OldWorkflowID.txt
-            export OldWorkflowID=$(cat ~/project/OldWorkflowID.txt)
+            cat ~/OldWorkflowID.txt
+            export OldWorkflowID=$(cat ~/OldWorkflowID.txt)
             echo OldWorkflowID: "${OldWorkflowID}"
             
             echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
@@ -454,7 +454,7 @@ jobs:
       - run:
           name: Remove old stacks and files
           command: |
-            export OldWorkflowID=$(cat ~/project/OldWorkflowID.txt)
+            export OldWorkflowID=$(cat ~/OldWorkflowID.txt)
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               echo "Delete old s3 and stacks"
