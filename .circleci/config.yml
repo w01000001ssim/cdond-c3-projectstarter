@@ -419,7 +419,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths: 
-            - project/OldWorkFlowID.txt
+            - OldWorkFlowID.txt
       - destroy-environment
       - revert-migrations  
 
