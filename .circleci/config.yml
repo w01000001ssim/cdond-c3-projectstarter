@@ -495,4 +495,4 @@ workflows:
             - deploy-backend
       - cloudfront-update:
           requires: 
-          - smoke-test
+          - smoke-test 
