@@ -366,7 +366,7 @@ jobs:
             echo udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
             echo ${API_URL}
 
-            sleep 100
+            sleep 200
 
             if curl -s $API_URL/api/status | grep "ok"
             then
@@ -385,8 +385,8 @@ jobs:
             else 
               return  1
             fi
-      - destroy-environment
-      - revert-migrations
+      #- destroy-environment
+      #- revert-migrations
 
 
   cloudfront-update:
