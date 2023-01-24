@@ -430,17 +430,21 @@ jobs:
             yum install tar gzip -y
       - attach_workspace:
           at: ~/
-      - run:
-          name: Get old stack workflow id
-          command: |
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
-            echo Stack names: "${STACKS[@]}"
 
-            export OldWorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-              --no-paginate --output text)
-            echo OldWorkflowID: "${OldWorkflowID}"
+      - run:
+          name: Remove all buckets exept ${CIRCLE_WORKFLOW_ID:0:7}
+          command: |
+            export BUCKETS=($(aws s3api list-buckets --query "Buckets[*].Name" --output text))
+            echo Bucket names: "${BUCKETS[@]}"
+
+            for bucket in "${BUCKETS[@]}"
+            do
+              if [[ "${bucket}" != "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" ]] && [[ "${bucket}" != "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" ]]
+              then
+                echo "Deleting bucket: ${bucket}"
+                aws s3 rb "s3://${bucket}" --force || true
+              fi
+            done
 
       - run:
           name: Remove all stacks exept ${CIRCLE_WORKFLOW_ID:0:7}
@@ -457,6 +461,9 @@ jobs:
                 aws cloudformation delete-stack --stack-name "${stack}" || true
               fi
             done
+
+
+
 
 
 workflows:
