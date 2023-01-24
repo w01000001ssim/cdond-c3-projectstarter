@@ -462,7 +462,8 @@ jobs:
 
 
 workflows:
+  default:
     jobs:
-      - cleanup:
+      - cleanup
           requires:
             - cloudfront-update
