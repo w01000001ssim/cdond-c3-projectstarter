@@ -286,60 +286,49 @@ jobs:
   
   deploy-backend:
     docker:
-      - image: cimg/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
+      # - when:
+      #     condition:
+      #       equal: [master]
       - add_ssh_keys:
-          fingerprints: ["af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"] 
+          # You can get this ID in the section where you registered the SSH Key
+          fingerprints: ["af:d7:aa:71:84:89:db:fb:c1:e0:ad:2f:7f:5e:58:c2"]
+      - restore_cache:
+          keys: [backend]
       - attach_workspace:
           at: ~/
-
       - run:
-          name: upgrade packages and Install AWS CLI
+          name: Install Ansible ans aws-cli
           command: |
-            sudo apt update
-            sudo apt upgrade -y
-            sudo apt install awscli -y
+            apk add --update ansible
+            apk add --no-cache \
+            python3 \
+            py3-pip \
+            && pip3 install --upgrade pip \
+            && pip3 install --no-cache-dir \
+                awscli \
+            && rm -rf /var/cache/apk/*
       - run:
-          name: Install dependencies
+          name: Prepare deploy
           command: |
-            # your code here
-            sudo apt install -y curl tar gzip
-            sudo apt install -y python3
-            sudo apt install -y python3-pip
-            python3 --version
-            python3 -m pip install --upgrade pip
-            # pip3 install ansible
-            python3 -m pip install ansible --user
-      
+            # cd backend
+            # npm install
+            # npm run build
+            # cd ..
+            # Zip the directory
+            tar -C backend -czf artifact.tar.gz .
+            mv artifact.tar.gz ~/project/build/artifact.tar.gz
+            ls -al1h build
       - run:
           name: Deploy backend
           command: |
-            cat > backend/.env \<<- EOF
-            TYPEORM_CONNECTION=$TYPEORM_CONNECTION
-            TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR
-            TYPEORM_ENTITIES=$TYPEORM_ENTITIES
-            TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS
-            TYPEORM_HOST=$TYPEORM_HOST
-            TYPEORM_PORT=$TYPEORM_PORT
-            TYPEORM_USERNAME=$TYPEORM_USERNAME
-            TYPEORM_PASSWORD=$TYPEORM_PASSWORD
-            TYPEORM_DATABASE=$TYPEORM_DATABASE
-            EOF
-            cat backend/.env
-            
-            cd backend
-            npm install
-            npm run build
-            cd ..
-            # Zip the directory
-            tar -C backend -czvf artifact.tar.gz .
-            ls -a && pwd
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-          no_output_timeout: 30m
+
       - destroy-environment
       - revert-migrations  
 
@@ -495,4 +484,4 @@ workflows:
             - deploy-backend
       - cloudfront-update:
           requires: 
-          - smoke-test
+          - smoke-test 
