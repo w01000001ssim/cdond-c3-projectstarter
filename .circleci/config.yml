@@ -467,9 +467,7 @@ jobs:
                 aws cloudformation delete-stack --stack-name "${stack}" || true
               fi
             done
-      - run:
-          name: Remove all stacks exept with curent ID
-          command: |
+
 
 
 workflows:
