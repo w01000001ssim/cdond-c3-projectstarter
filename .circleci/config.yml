@@ -415,7 +415,7 @@ jobs:
             --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
             --tags project=udapeople
             echo Old workFlow ID: "$OldWorkFlowID"
-            echo New workflow ID is ...: "${CIRCLE_WORKFLOW_ID:0:7}"
+            echo New workflow ID: "${CIRCLE_WORKFLOW_ID:0:7}"
       - persist_to_workspace:
           root: ~/
           paths: 
@@ -438,8 +438,12 @@ jobs:
           at: ~/
 
       - run:
-          name: Remove all buckets exept ${CIRCLE_WORKFLOW_ID:0:7}
+          name: Remove all buckets and staks exept with curent ID
           command: |
+            export OldWorkFlowID=$(cat ~/OldWorkFlowID.txt)
+            echo Old workflow ID is: "$OldWorkFlowID"
+            echo New workflow ID is: "${CIRCLE_WORKFLOW_ID:0:7}"
+            
             export BUCKETS=($(aws s3api list-buckets --query "Buckets[*].Name" --output text))
             echo Bucket names: "${BUCKETS[@]}"
 
@@ -451,10 +455,6 @@ jobs:
                 aws s3 rb "s3://${bucket}" --force || true
               fi
             done
-
-      - run:
-          name: Remove all stacks exept ${CIRCLE_WORKFLOW_ID:0:7}
-          command: |
             export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
               --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
             echo Stack names: "${STACKS[@]}"
@@ -467,6 +467,10 @@ jobs:
                 aws cloudformation delete-stack --stack-name "${stack}" || true
               fi
             done
+      - run:
+          name: Remove all stacks exept with curent ID
+          command: |
+
 
 workflows:
   default:
