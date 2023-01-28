@@ -1,0 +1,8 @@
+1-Public Url to GitHub repository (not private) [URL01]
+
+https://github.com/w01000001ssim/cdond-c3-projectstarter
+
+
+2-Public URL for your S3 Bucket (aka, your green candidate front-end) [URL02]
+
+https://udapeople-6d6f373.s3.amazonaws.com/index.html
