@@ -5,4 +5,4 @@ https://github.com/w01000001ssim/cdond-c3-projectstarter
 
 2-Public URL for your S3 Bucket (aka, your green candidate front-end) [URL02]
 
-https://udapeople-9a2f915.s3.amazonaws.com/index.html
+https://udapeople-58ebffd.s3.amazonaws.com/index.html
