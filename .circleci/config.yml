@@ -13,14 +13,10 @@ commands:
           name: Revert Migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl --insecure "https://kvdb.io/B15e9WYzosEcMgA3oHxrTW/migration_${CIRCLE_WORKFLOW_ID:0:7}")
-            if(($SUCCESS==1));
-            then
               cd ~/project/backend
               npm install
               npm run build
               npm run migration:revert
-            fi
 
 
   destroy-environment:
@@ -167,13 +163,13 @@ jobs:
             --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
             echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID:0:7}
-            -----errrr
+        
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment
-      - revert-migrations  
+
   
   configure-infrastructure:
     docker:
@@ -199,7 +195,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
          
       - destroy-environment
-      - revert-migrations  
+
   
   run-migrations:
     docker:
