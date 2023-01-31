@@ -13,7 +13,7 @@ commands:
           name: Revert Migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl --insecure "https://kvdb.io/B15e9WYzosEcMgA3oHxrTW/migration_<<parameters.workflow_id>>")
+            SUCCESS=$(curl --insecure "https://kvdb.io/B15e9WYzosEcMgA3oHxrTW/migration_${CIRCLE_WORKFLOW_ID:0:7}")
             if(($SUCCESS==1));
             then
               cd ~/project/backend
@@ -134,7 +134,7 @@ jobs:
 
   deploy-infrastructure:
     docker:
-      - image: amazon/aws-cli
+      - image: amazon/aws-cli-----errrr
     steps:
       - checkout
       - run:
